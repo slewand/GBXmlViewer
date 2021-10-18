@@ -73,25 +73,25 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   Graphics2D g2d = (Graphics2D)g;
   Point p1 = null, p2 = null;
   // uk³ad wspó³rzêdnych
-  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0), centralPoint, viewWidth, viewHeight, transX, transY);
+  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0), centralPoint);
   if(p1!=null)
   {
    g.setColor(Color.BLUE); // oœ X
-   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0), centralPoint, viewWidth, viewHeight, transX, transY);
+   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0), centralPoint);
    if(p2 != null)
    {
     g2d.draw(new Line2D.Double(p1, p2));
     g2d.drawString("X", p2.x+5, p2.y);
    }
    g.setColor(Color.GREEN); // oœ Y
-   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0), centralPoint, viewWidth, viewHeight, transX, transY);
+   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0), centralPoint);
    if(p2 != null)
    {
     g2d.draw(new Line2D.Double(p1, p2));
     g2d.drawString("Y", p2.x+5, p2.y);
    }
    g.setColor(Color.RED); // oœ Z
-   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0), centralPoint, viewWidth, viewHeight, transX, transY);
+   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0), centralPoint);
    if(p2 != null)
    {
     g2d.draw(new Line2D.Double(p1, p2));
@@ -100,8 +100,10 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   }
  }
  
- public Point transform3DTo2D(Point3D point3D, Point3D centralPoint, int viewWidth, int viewHeight, int transX, int transY)
+ public Point transform3DTo2D(Point3D point3D, Point3D centralPoint)
  {
+  int viewWidth = getWidth();
+  int viewHeight = getHeight();
   double pX = point3D.getX();
   double pY = point3D.getY();
   double pZ = point3D.getZ();
