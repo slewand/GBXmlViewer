@@ -11,8 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
 
-import gbxmlviewer.gui.view.Transformer;
-import gbxmlviewer.gui.view.View;
 import gbxmlviewer.io.XMLReader;
 import gbxmlviewer.model.Model;
 import gbxmlviewer.res.ResourceManager;
@@ -58,7 +56,7 @@ public class MainFrame extends JFrame
   toolBar.add(openFileButton);
   add(toolBar, BorderLayout.NORTH);
   
-  view = new View(new Transformer());
+  view = new View();
   add(view, BorderLayout.CENTER);
   
   openFileButton.addActionListener(new ActionListener()
