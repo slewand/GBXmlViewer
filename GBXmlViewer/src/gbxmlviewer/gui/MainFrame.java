@@ -11,6 +11,8 @@ import javax.swing.JFrame;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
 
+import gbxmlviewer.gui.view.Transformer;
+import gbxmlviewer.gui.view.View;
 import gbxmlviewer.io.XMLReader;
 import gbxmlviewer.model.Model;
 import gbxmlviewer.res.ResourceManager;
@@ -22,11 +24,14 @@ public class MainFrame extends JFrame
  private JButton openFileButton;
  private JFileChooser fileChooser;
  
+ private View view;
+ 
  public MainFrame()
  {
   super("GBXml Viewer");
   setDefaultCloseOperation(EXIT_ON_CLOSE);
   setSize(800, 600);
+  setLocationRelativeTo(null);
   ResourceManager resourceManager = ResourceManager.getInstance();
   
   fileChooser = new JFileChooser();
@@ -53,8 +58,11 @@ public class MainFrame extends JFrame
   toolBar.add(openFileButton);
   add(toolBar, BorderLayout.NORTH);
   
+  view = new View(new Transformer());
+  add(view, BorderLayout.CENTER);
+  
   openFileButton.addActionListener(new ActionListener()
-  {   
+  {
    @Override
    public void actionPerformed(ActionEvent e)
    {
@@ -63,7 +71,7 @@ public class MainFrame extends JFrame
      XMLReader xmlReader = new XMLReader();
      xmlReader.readModel(fileChooser.getSelectedFile());
      Model model = xmlReader.getModel();
-     System.out.println(model.getBounds3D().toString());
+     view.setModel(model);
     }    
    }
   });

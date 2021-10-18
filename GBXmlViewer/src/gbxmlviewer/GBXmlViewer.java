@@ -5,6 +5,9 @@ import javax.swing.UIManager;
 
 import gbxmlviewer.gui.MainFrame;
 
+/**
+ * G³ówna klasa aplikacji
+ */
 public class GBXmlViewer
 {
 
