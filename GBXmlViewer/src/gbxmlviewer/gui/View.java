@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -13,6 +14,7 @@ import java.awt.geom.Line2D;
 
 import javax.swing.JPanel;
 
+import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.model.Model;
 
@@ -23,37 +25,56 @@ import gbxmlviewer.model.Model;
 public class View extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener
 {
  /** Odlegloœc kamery od rzutni */
- private double d;
+ private double d = 1.0;
  /** K¹t widzenia kamery (stopnie) */
- private double fov;
+ private double fov = 45.0;
  /** K¹ty obrotu */
  private double alpha = Math.PI, beta = 0.0;
  /** Macierz obrotu */
  private transient double[][] Mt = new double[3][3];
- /** Maksymalna rozpiêtoœæ uk³adu w dowolnym kierunku */
- private double maxBound = 2.0;
-
- private Model model;
- 
  /** Ostatnia pozycji myszki */
  private transient int lastX = 0, lastY = 0;
  /** Przesuniêcie (w pikselach) */
  private int transX = 0, transY = 0; 
 
+ /** Maksymalna rozpiêtoœæ modelu w dowolnym kierunku */
+ private double maxBound = 2.0;
+ /** Œrodek modelu */
+ private Point3D centralPoint = new Point3D(0.0, 0.0, 0.0);
+ 
+ private Model model;
+ 
  public View()
  {
-  d = 1.0;
-  fov = 45.0;
+  reset();
   updateMt();
-
   addMouseListener(this);
   addMouseMotionListener(this);
   addMouseWheelListener(this);
  }
  
+ 
+ public void reset()
+ {
+  d = 1.0;
+  fov = 45.0;
+  alpha = Math.PI;
+  beta = 0.0;
+  lastX = 0;
+  lastY = 0;
+  transX = 0;
+  transY = 0;
+  maxBound = 2.0;
+  centralPoint = new Point3D(0.0, 0.0, 0.0);
+ }
+ 
  public void setModel(Model model)
  {
+  reset();
   this.model = model;
+  Bounds3D bounds = model.getBounds3D();
+  centralPoint = new Point3D((bounds.getxMin()+bounds.getxMax())/2.0, (bounds.getyMin()+bounds.getyMax())/2.0, (bounds.getzMin()+bounds.getzMax())/2.0);
+  maxBound = Double.max(Double.max(bounds.getDx(), bounds.getDy()), bounds.getDz());
   repaint();
  }
  
@@ -65,12 +86,8 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   g.setColor(Color.WHITE);
   g.fillRect(0, 0, viewWidth, viewHeight);
 
-  Point3D centralPoint;
-  if(model==null)
-   centralPoint = new Point3D(0.0, 0.0, 0.0);
-  else
-   centralPoint = model.getCentralPoint();
   Graphics2D g2d = (Graphics2D)g;
+  g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
   Point p1 = null, p2 = null;
   // uk³ad wspó³rzêdnych
   p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0), centralPoint);
