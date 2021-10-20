@@ -3,6 +3,8 @@ package gbxmlviewer.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import gbxmlviewer.geom.Point3D;
+
 public class CartesianPoint
 {
  private List<Double> coordinates = new ArrayList<>(3);
@@ -15,6 +17,18 @@ public class CartesianPoint
  public void addCoordinate(Double coordinate)
  {
   coordinates.add(coordinate);
+ }
+ 
+ public Point3D getAsPoint3D()
+ {
+  Point3D point = new Point3D();
+  if(coordinates.size()>=1)
+   point.setX(coordinates.get(0));
+  if(coordinates.size()>=2)
+   point.setY(coordinates.get(1));
+  if(coordinates.size()>=3)
+   point.setZ(coordinates.get(2));  
+  return point;
  }
  
  @Override

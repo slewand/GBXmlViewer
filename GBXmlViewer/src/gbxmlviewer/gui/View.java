@@ -1,5 +1,6 @@
 package gbxmlviewer.gui;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,12 +12,14 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Line2D;
+import java.util.List;
 
 import javax.swing.JPanel;
 
 import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.model.Model;
+import gbxmlviewer.model.Surface;
 
 /**
  * Widok, na którym odbywa siê rysowanie
@@ -42,6 +45,12 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  /** Œrodek modelu */
  private Point3D centralPoint = new Point3D(0.0, 0.0, 0.0);
  
+ /** Czy pokazywaæ powierzchnie (surfaces) */
+ private boolean showSurfaces = true;
+ /** Czy pokazywaæ pomieszczenia (spaces) */
+ private boolean showSpaces = true;
+ 
+ /** Aktualny model lub null */
  private Model model;
  
  public View()
@@ -72,43 +81,81 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  {
   reset();
   this.model = model;
-  Bounds3D bounds = model.getBounds3D();
-  centralPoint = new Point3D((bounds.getxMin()+bounds.getxMax())/2.0, (bounds.getyMin()+bounds.getyMax())/2.0, (bounds.getzMin()+bounds.getzMax())/2.0);
-  maxBound = Double.max(Double.max(bounds.getDx(), bounds.getDy()), bounds.getDz());
+  if(model!=null)
+  {
+   Bounds3D bounds = model.getBounds3D();
+   centralPoint = new Point3D((bounds.getxMin()+bounds.getxMax())/2.0, (bounds.getyMin()+bounds.getyMax())/2.0, (bounds.getzMin()+bounds.getzMax())/2.0);
+   maxBound = Double.max(Double.max(bounds.getDx(), bounds.getDy()), bounds.getDz());
+  }
+  repaint();
+ }
+ 
+ public void setShowSurfaces(boolean showSurfaces)
+ {
+  this.showSurfaces = showSurfaces;
+  repaint();
+ }
+ 
+ public void setShowSpaces(boolean showSpaces)
+ {
+  this.showSpaces = showSpaces;    
   repaint();
  }
  
  @Override
  protected void paintComponent(Graphics g)
  {
+  Graphics2D g2d = (Graphics2D)g;
   int viewWidth = getWidth();
   int viewHeight = getHeight();
-  g.setColor(Color.WHITE);
+  g.setColor(Color.LIGHT_GRAY);
   g.fillRect(0, 0, viewWidth, viewHeight);
-
-  Graphics2D g2d = (Graphics2D)g;
+  
   g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-  Point p1 = null, p2 = null;
-  // uk³ad wspó³rzêdnych
-  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0), centralPoint);
+  if(model!=null)
+  {
+   // Powierzchnie (surfaces)
+   if(showSurfaces)
+   {
+    List<Surface> surfaces = model.getCampus().getSurfaces();
+    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+    for(Surface surface: surfaces)
+    {
+     Appearance appearance = surface.getAppearanceForView(this);
+     g2d.setPaint(appearance.getFillColor());
+     g2d.fill(appearance.getScreenShape());
+    }
+    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+    for(Surface surface: surfaces)
+    {
+     Appearance appearance = surface.getAppearanceForView(this);
+     g2d.setColor(appearance.getStrokeColor());
+     g2d.draw(appearance.getScreenShape());    
+    }    
+   }   
+  }
+  
+  // Uk³ad wspó³rzêdnych
+  Point p1 = null, p2 = null;  
+  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0));
   if(p1!=null)
   {
    g.setColor(Color.BLUE); // oœ X
-   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0), centralPoint);
+   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0));
    if(p2 != null)
    {
     g2d.draw(new Line2D.Double(p1, p2));
     g2d.drawString("X", p2.x+5, p2.y);
    }
    g.setColor(Color.GREEN); // oœ Y
-   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0), centralPoint);
+   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0));
    if(p2 != null)
    {
     g2d.draw(new Line2D.Double(p1, p2));
     g2d.drawString("Y", p2.x+5, p2.y);
    }
    g.setColor(Color.RED); // oœ Z
-   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0), centralPoint);
+   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0));
    if(p2 != null)
    {
     g2d.draw(new Line2D.Double(p1, p2));
@@ -117,7 +164,7 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   }
  }
  
- public Point transform3DTo2D(Point3D point3D, Point3D centralPoint)
+ public Point transform3DTo2D(Point3D point3D)
  {
   int viewWidth = getWidth();
   int viewHeight = getHeight();

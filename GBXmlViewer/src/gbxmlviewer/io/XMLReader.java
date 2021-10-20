@@ -10,11 +10,15 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import gbxmlviewer.model.Building;
 import gbxmlviewer.model.Campus;
 import gbxmlviewer.model.CartesianPoint;
 import gbxmlviewer.model.Model;
+import gbxmlviewer.model.Opening;
 import gbxmlviewer.model.PlanarGeometry;
 import gbxmlviewer.model.PolyLoop;
+import gbxmlviewer.model.Space;
+import gbxmlviewer.model.SpaceBoundary;
 import gbxmlviewer.model.Surface;
 
 public class XMLReader
@@ -27,7 +31,8 @@ public class XMLReader
   {
    SAXParserFactory factory = SAXParserFactory.newInstance();
    SAXParser parser = factory.newSAXParser();
-   parser.parse(file.getAbsolutePath(), new GBXmlHandler());
+   String absolutePath = "file:///"+file.getAbsolutePath();
+   parser.parse(absolutePath, new GBXmlHandler());
   }
   catch (FileNotFoundException e)
   {
@@ -50,11 +55,14 @@ public class XMLReader
   private StringBuilder valueBuilder = new StringBuilder();
 
   private Campus campus;
+  private Building building;
+  private Space space;
   private Surface surface;
+  private Opening opening;
+  private SpaceBoundary spaceBoundary;
   private PlanarGeometry planarGeometry;
   private PolyLoop polyLoop;
   private CartesianPoint cartesianPoint;
-  private Double coordinate;
   
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
@@ -68,9 +76,21 @@ public class XMLReader
     case CAMPUS_TAG:
      campus = new Campus();
     break;
+    case BUILDING_TAG:
+     building = new Building();
+    break;
+    case SPACE_TAG:
+     space = new Space();
+    break;
     case SURFACE_TAG:
      surface = new Surface();
     break;
+    case OPENING_TAG:
+     opening = new Opening();
+    break;
+    case SPACE_BOUNDARY_TAG:
+     spaceBoundary = new SpaceBoundary();
+    break;    
     case PLANAR_GEOMETRY_TAG:
      planarGeometry = new PlanarGeometry();
     break;
@@ -98,8 +118,15 @@ public class XMLReader
       campus.addSurface(surface);
      surface = null;
     break;
-    case PLANAR_GEOMETRY_TAG:
+    case OPENING_TAG:
      if(surface!=null)
+      surface.addOpening(opening);
+     opening = null;
+    break;
+    case PLANAR_GEOMETRY_TAG:
+     if(opening!=null)
+      opening.setPlanarGeometry(planarGeometry);
+     else if(surface!=null)
       surface.setPlanarGeometry(planarGeometry);
      planarGeometry = null;
     break;
@@ -130,7 +157,10 @@ public class XMLReader
   private final String GBXML_TAG = "gbXML",
                        CAMPUS_TAG = "Campus",
                        BUILDING_TAG = "Building",
+                       SPACE_TAG = "Space",
+                       OPENING_TAG = "Opening",
                        SURFACE_TAG = "Surface",
+                       SPACE_BOUNDARY_TAG = "SpaceBoundary",
                        PLANAR_GEOMETRY_TAG = "PlanarGeometry",
                        POLY_LOOP_TAG = "PolyLoop",
                        CARTESIAN_POINT_TAG = "CartesianPoint",

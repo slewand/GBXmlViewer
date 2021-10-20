@@ -8,6 +8,7 @@ import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileFilter;
 
@@ -20,6 +21,8 @@ public class MainFrame extends JFrame
 {
  private JToolBar toolBar;
  private JButton openFileButton;
+ private JToggleButton showSurfacesButton;
+ private JToggleButton showSpacesButton;
  private JFileChooser fileChooser;
  
  private View view;
@@ -50,10 +53,17 @@ public class MainFrame extends JFrame
   
   openFileButton = new JButton(resourceManager.getIcon("openFile_24"));
   openFileButton.setFocusable(false);
+  showSurfacesButton = new JToggleButton(resourceManager.getIcon("showSurfaces_24"), true);
+  showSurfacesButton.setFocusable(false);
+  showSpacesButton = new JToggleButton(resourceManager.getIcon("showSpaces_24"), true);
+  showSpacesButton.setFocusable(false);
+  
   toolBar = new JToolBar();
   toolBar.setRollover(true);
   toolBar.setFloatable(false);
   toolBar.add(openFileButton);
+  toolBar.add(showSurfacesButton);
+  toolBar.add(showSpacesButton);
   add(toolBar, BorderLayout.NORTH);
   
   view = new View();
@@ -71,6 +81,15 @@ public class MainFrame extends JFrame
      Model model = xmlReader.getModel();
      view.setModel(model);
     }    
+   }
+  });
+  
+  showSurfacesButton.addActionListener(new ActionListener()
+  {
+   @Override
+   public void actionPerformed(ActionEvent e)
+   {
+    view.setShowSurfaces(showSurfacesButton.isSelected());
    }
   });
  }

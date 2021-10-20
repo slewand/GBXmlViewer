@@ -2,19 +2,22 @@ package gbxmlviewer.gui;
 
 import java.awt.Color;
 import java.awt.Shape;
+import java.awt.geom.Area;
 
 /**
  * Opis wygl¹du na ekranie
  */
 public class Appearance
 {
- private Shape screenShape;
- private Color color;
+ private Area screenShape;
+ private Color strokeColor;
+ private Color fillColor;
  
- public Appearance(Shape screenShape, Color color)
+ public Appearance(Area screenShape, Color strokeColor, Color fillColor)
  {
-  this.screenShape = screenShape;
-  this.color = color;
+  this.screenShape = screenShape;  
+  this.strokeColor = strokeColor;
+  this.fillColor = fillColor;
  }
 
  public Shape getScreenShape()
@@ -22,8 +25,13 @@ public class Appearance
   return screenShape;
  }
 
- public Color getColor()
+ public Color getStrokeColor()
  {
-  return color;
+  return strokeColor;
+ }
+ 
+ public Color getFillColor()
+ {
+  return fillColor;
  }
 }
