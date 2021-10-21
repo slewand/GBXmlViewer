@@ -13,10 +13,12 @@ import org.xml.sax.helpers.DefaultHandler;
 import gbxmlviewer.model.Building;
 import gbxmlviewer.model.Campus;
 import gbxmlviewer.model.CartesianPoint;
+import gbxmlviewer.model.ClosedShell;
 import gbxmlviewer.model.Model;
 import gbxmlviewer.model.Opening;
 import gbxmlviewer.model.PlanarGeometry;
 import gbxmlviewer.model.PolyLoop;
+import gbxmlviewer.model.ShellGeometry;
 import gbxmlviewer.model.Space;
 import gbxmlviewer.model.SpaceBoundary;
 import gbxmlviewer.model.Surface;
@@ -51,7 +53,6 @@ public class XMLReader
  
  private class GBXmlHandler extends DefaultHandler
  {
-  private String lastTagName;
   private StringBuilder valueBuilder = new StringBuilder();
 
   private Campus campus;
@@ -59,6 +60,8 @@ public class XMLReader
   private Space space;
   private Surface surface;
   private Opening opening;
+  private ShellGeometry shellGeometry;
+  private ClosedShell closedShell;
   private SpaceBoundary spaceBoundary;
   private PlanarGeometry planarGeometry;
   private PolyLoop polyLoop;
@@ -67,7 +70,6 @@ public class XMLReader
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
   {
-   lastTagName = qName;
    switch(qName)
    {
     case GBXML_TAG:
@@ -87,6 +89,12 @@ public class XMLReader
     break;
     case OPENING_TAG:
      opening = new Opening();
+    break;
+    case SHELL_GEOMETRY_TAG:
+     shellGeometry = new ShellGeometry();
+    break;
+    case CLOSED_SHELL_TAG:
+     closedShell = new ClosedShell();
     break;
     case SPACE_BOUNDARY_TAG:
      spaceBoundary = new SpaceBoundary();
@@ -113,6 +121,21 @@ public class XMLReader
      model.setCampus(campus);
      campus = null;
     break;
+    case BUILDING_TAG:
+     if(campus!=null)
+      campus.addBuilding(building);
+     building = null;
+    break;
+    case SPACE_TAG:
+     if(building!=null)
+      building.addSpace(space);
+     space = null;
+    break;
+    case SPACE_BOUNDARY_TAG:
+     if(space!=null)
+      space.addSpaceBoundary(spaceBoundary);
+     spaceBoundary = null;
+    break;
     case SURFACE_TAG:
      if(campus!=null)
       campus.addSurface(surface);
@@ -123,8 +146,22 @@ public class XMLReader
       surface.addOpening(opening);
      opening = null;
     break;
+    case SHELL_GEOMETRY_TAG:
+     if(space!=null)
+      space.setShellGeometry(shellGeometry);
+     shellGeometry = null;
+    break;
+    case CLOSED_SHELL_TAG:
+     if(shellGeometry!=null)
+      shellGeometry.setClosedShell(closedShell);
+     closedShell = null;
+    break;
     case PLANAR_GEOMETRY_TAG:
-     if(opening!=null)
+     if(spaceBoundary!=null)
+      spaceBoundary.setPlanarGeometry(planarGeometry);
+     else if(space!=null)
+      space.setPlanarGeometry(planarGeometry);
+     else if(opening!=null)
       opening.setPlanarGeometry(planarGeometry);
      else if(surface!=null)
       surface.setPlanarGeometry(planarGeometry);
@@ -133,6 +170,8 @@ public class XMLReader
     case POLY_LOOP_TAG:
      if(planarGeometry!=null)
       planarGeometry.addPolyLoop(polyLoop);
+     else if(closedShell!=null)
+      closedShell.addPolyLoop(polyLoop);
      polyLoop = null;
     break;    
     case CARTESIAN_POINT_TAG:
@@ -160,6 +199,8 @@ public class XMLReader
                        SPACE_TAG = "Space",
                        OPENING_TAG = "Opening",
                        SURFACE_TAG = "Surface",
+                       SHELL_GEOMETRY_TAG = "ShellGeometry",
+                       CLOSED_SHELL_TAG = "ClosedShell",
                        SPACE_BOUNDARY_TAG = "SpaceBoundary",
                        PLANAR_GEOMETRY_TAG = "PlanarGeometry",
                        POLY_LOOP_TAG = "PolyLoop",

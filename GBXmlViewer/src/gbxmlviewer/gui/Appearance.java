@@ -1,28 +1,38 @@
 package gbxmlviewer.gui;
 
 import java.awt.Color;
-import java.awt.Shape;
 import java.awt.geom.Area;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Opis wygl¹du na ekranie
+ * Opis wygl¹du obiektu na ekranie (kontury , kolory itp.)
  */
 public class Appearance
 {
- private Area screenShape;
+ private List<Area> screenShapes;;
  private Color strokeColor;
  private Color fillColor;
  
  public Appearance(Area screenShape, Color strokeColor, Color fillColor)
  {
-  this.screenShape = screenShape;  
+  screenShapes = new ArrayList<>(1);
+  screenShapes.add(screenShape);  
   this.strokeColor = strokeColor;
   this.fillColor = fillColor;
  }
 
- public Shape getScreenShape()
+ public Appearance(List<Area> screenShapes, Color strokeColor, Color fillColor)
  {
-  return screenShape;
+  this.screenShapes = screenShapes;
+  this.strokeColor = strokeColor;
+  this.fillColor = fillColor;  
+ }
+ 
+ 
+ public List<Area> getScreenShapes()
+ {
+  return screenShapes;
  }
 
  public Color getStrokeColor()

@@ -7,7 +7,18 @@ import gbxmlviewer.geom.Bounds3D;
 
 public class Campus
 {
+ private List<Building> buildings = new ArrayList<>();
  private List<Surface> surfaces = new ArrayList<>();
+ 
+ public List<Building> getBuildings()
+ {
+  return buildings;
+ }
+ 
+ public void addBuilding(Building building)
+ {
+  buildings.add(building);
+ }
  
  public List<Surface> getSurfaces()
  {

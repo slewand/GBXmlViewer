@@ -11,6 +11,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.model.Model;
+import gbxmlviewer.model.Space;
 import gbxmlviewer.model.Surface;
 
 /**
@@ -45,10 +47,14 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  /** Œrodek modelu */
  private Point3D centralPoint = new Point3D(0.0, 0.0, 0.0);
  
- /** Czy pokazywaæ powierzchnie (surfaces) */
- private boolean showSurfaces = true;
- /** Czy pokazywaæ pomieszczenia (spaces) */
- private boolean showSpaces = true;
+ private boolean showSurfacesPlanarGeometryStroke;
+ private boolean showSurfacesPlanarGeometryFill;
+ private boolean showSpacesSpaceBoundaryStroke;
+ private boolean showSpacesSpaceBoundaryFill;
+ private boolean showSpacesPlanarGeometryStroke;
+ private boolean showSpacesPlanarGeometryFill;
+ private boolean showSpacesShellGeometryStroke;
+ private boolean showSpacesShellGeometryFill;
  
  /** Aktualny model lub null */
  private Model model;
@@ -90,18 +96,6 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   repaint();
  }
  
- public void setShowSurfaces(boolean showSurfaces)
- {
-  this.showSurfaces = showSurfaces;
-  repaint();
- }
- 
- public void setShowSpaces(boolean showSpaces)
- {
-  this.showSpaces = showSpaces;    
-  repaint();
- }
- 
  @Override
  protected void paintComponent(Graphics g)
  {
@@ -114,54 +108,148 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
   if(model!=null)
   {
-   // Powierzchnie (surfaces)
-   if(showSurfaces)
+   List<Surface> surfaces = model.getCampus().getSurfaces();
+   List<Space> spaces = model.getCampus().getBuildings().get(0).getSpaces();
+
+   g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+   if(showSpacesSpaceBoundaryFill)
    {
-    List<Surface> surfaces = model.getCampus().getSurfaces();
-    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+    for(Space space: spaces)
+    {
+     Appearance appearance = space.getSpaceBoundariesAppearanceForView(this);
+     if(appearance!=null)
+     {
+      g2d.setPaint(appearance.getFillColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.fill(screenShape);
+     }
+    }
+   }
+
+   if(showSpacesPlanarGeometryFill)
+   {
+    for(Space space: spaces)
+    {
+     Appearance appearance = space.getPlanarGeometryAppearanceForView(this);
+     if(appearance!=null)
+     {
+      g2d.setPaint(appearance.getFillColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.fill(screenShape);
+     }
+    }    
+   }
+   
+   if(showSpacesShellGeometryFill)
+   {
+    for(Space space: spaces)
+    {
+     Appearance appearance = space.getShellGeometryAppearanceForView(this);
+     if(appearance!=null)
+     {
+      g2d.setPaint(appearance.getFillColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.fill(screenShape);
+     }
+    }    
+   }
+   
+   if(showSurfacesPlanarGeometryFill)
+   {    
     for(Surface surface: surfaces)
     {
      Appearance appearance = surface.getAppearanceForView(this);
      g2d.setPaint(appearance.getFillColor());
-     g2d.fill(appearance.getScreenShape());
+     for(Area screenShape: appearance.getScreenShapes())
+      g2d.fill(screenShape);
     }
-    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+   }
+      
+   g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+      
+   if(showSpacesSpaceBoundaryStroke)
+   {
+    for(Space space: spaces)
+    {
+     Appearance appearance = space.getSpaceBoundariesAppearanceForView(this);
+     if(appearance!=null)
+     {
+      g2d.setColor(appearance.getStrokeColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.draw(screenShape);
+     }
+    }    
+   }
+   
+   if(showSpacesPlanarGeometryStroke)
+   {
+    for(Space space: spaces)
+    {
+     Appearance appearance = space.getPlanarGeometryAppearanceForView(this);
+     if(appearance!=null)
+     {
+      g2d.setColor(appearance.getStrokeColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.draw(screenShape);
+     }
+    }
+   }
+   
+   if(showSurfacesPlanarGeometryStroke)
+   {
     for(Surface surface: surfaces)
     {
      Appearance appearance = surface.getAppearanceForView(this);
      g2d.setColor(appearance.getStrokeColor());
-     g2d.draw(appearance.getScreenShape());    
-    }    
-   }   
+     for(Area screenShape: appearance.getScreenShapes())
+      g2d.draw(screenShape);    
+    }
+   }
   }
   
-  // Uk³ad wspó³rzêdnych
-  Point p1 = null, p2 = null;  
-  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0));
-  if(p1!=null)
-  {
-   g.setColor(Color.BLUE); // oœ X
-   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0));
-   if(p2 != null)
-   {
-    g2d.draw(new Line2D.Double(p1, p2));
-    g2d.drawString("X", p2.x+5, p2.y);
-   }
-   g.setColor(Color.GREEN); // oœ Y
-   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0));
-   if(p2 != null)
-   {
-    g2d.draw(new Line2D.Double(p1, p2));
-    g2d.drawString("Y", p2.x+5, p2.y);
-   }
-   g.setColor(Color.RED); // oœ Z
-   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0));
-   if(p2 != null)
-   {
-    g2d.draw(new Line2D.Double(p1, p2));
-    g2d.drawString("Z", p2.x+5, p2.y);
-   }   
-  }
+//  // Uk³ad wspó³rzêdnych
+//  Point p1 = null, p2 = null;  
+//  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0));
+//  if(p1!=null)
+//  {
+//   g.setColor(Color.BLUE); // oœ X
+//   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0));
+//   if(p2 != null)
+//   {
+//    g2d.draw(new Line2D.Double(p1, p2));
+//    g2d.drawString("X", p2.x+5, p2.y);
+//   }
+//   g.setColor(Color.GREEN); // oœ Y
+//   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0));
+//   if(p2 != null)
+//   {
+//    g2d.draw(new Line2D.Double(p1, p2));
+//    g2d.drawString("Y", p2.x+5, p2.y);
+//   }
+//   g.setColor(Color.RED); // oœ Z
+//   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0));
+//   if(p2 != null)
+//   {
+//    g2d.draw(new Line2D.Double(p1, p2));
+//    g2d.drawString("Z", p2.x+5, p2.y);
+//   }   
+//  }
+ }
+ 
+ public void setElementVisiblity(boolean showSurfacesPlanarGeometryStroke, boolean showSurfacesPlanarGeometryFill,
+                                 boolean showSpacesSpaceBoundaryStroke, boolean showSpacesSpaceBoundaryFill,
+                                 boolean showSpacesPlanarGeometryStroke, boolean showSpacesPlanarGeometryFill,
+                                 boolean showSpacesShellGeometryStroke, boolean showSpacesShellGeometryFill)
+ {
+  this.showSurfacesPlanarGeometryStroke = showSurfacesPlanarGeometryStroke;
+  this.showSurfacesPlanarGeometryFill = showSurfacesPlanarGeometryFill;
+  this.showSpacesSpaceBoundaryStroke = showSpacesSpaceBoundaryStroke;
+  this.showSpacesSpaceBoundaryFill = showSpacesSpaceBoundaryFill;
+  this.showSpacesPlanarGeometryStroke = showSpacesPlanarGeometryStroke;
+  this.showSpacesPlanarGeometryFill = showSpacesPlanarGeometryFill;
+  this.showSpacesShellGeometryStroke = showSpacesShellGeometryStroke;
+  this.showSpacesShellGeometryFill = showSpacesShellGeometryFill;
+  repaint();
  }
  
  public Point transform3DTo2D(Point3D point3D)

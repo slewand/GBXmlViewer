@@ -5,11 +5,10 @@ import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
-import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.gui.View;
 
-public class PlanarGeometry
+public class ClosedShell
 {
  private List<PolyLoop> polyLoops = new ArrayList<>();
  
@@ -23,24 +22,12 @@ public class PlanarGeometry
   polyLoops.add(polyLoop);
  }
  
- public Bounds3D getBounds3D()
- {
-  Bounds3D bounds = null;
-  for(PolyLoop polyLoop: polyLoops)
-  {
-   if(bounds==null)
-    bounds = polyLoop.getBounds3D();
-   else
-    bounds.union(polyLoop.getBounds3D());
-  }
-  return bounds;
- }
- 
  public GeneralPath getScreenPath(View view)
  {
   GeneralPath generalPath = new GeneralPath();
-  for(PolyLoop polyLoop: polyLoops)
-  {
+  PolyLoop polyLoop = polyLoops.get(0);
+//  for(PolyLoop polyLoop: polyLoops)
+//  {
    List<CartesianPoint> points = polyLoop.getCartesianPoints();
    for(int i=0; i<points.size(); i++)
    {
@@ -52,7 +39,7 @@ public class PlanarGeometry
      generalPath.lineTo(point2D.x, point2D.y);
    }
    generalPath.closePath();
-  }
+//  }
   return generalPath;
  }
 }
