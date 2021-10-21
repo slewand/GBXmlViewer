@@ -12,7 +12,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Area;
-import java.awt.geom.Line2D;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -29,12 +28,17 @@ import gbxmlviewer.model.Surface;
 @SuppressWarnings("serial")
 public class View extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener
 {
- /** Odlegloœc kamery od rzutni */
- private double d = 1.0;
- /** K¹t widzenia kamery (stopnie) */
- private double fov = 45.0;
+ /** Powiêkszenie */
+ private double zoom;
+ /** K¹t widzenia kamery */
+ private double kp = Math.toRadians(60.0);
+ /** Pomocnicze */
+ private double c1, c3;
+ /** Powiêkszenie */
+ private double scale;
+ 
  /** K¹ty obrotu */
- private double alpha = Math.PI, beta = 0.0;
+ private double alpha, beta;
  /** Macierz obrotu */
  private transient double[][] Mt = new double[3][3];
  /** Ostatnia pozycji myszki */
@@ -43,9 +47,9 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  private int transX = 0, transY = 0; 
 
  /** Maksymalna rozpiêtoœæ modelu w dowolnym kierunku */
- private double maxBound = 2.0;
+ private double maxBound;
  /** Œrodek modelu */
- private Point3D centralPoint = new Point3D(0.0, 0.0, 0.0);
+ private Point3D centralPoint;
  
  private boolean showSurfacesPlanarGeometryStroke;
  private boolean showSurfacesPlanarGeometryFill;
@@ -62,7 +66,6 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  public View()
  {
   reset();
-  updateMt();
   addMouseListener(this);
   addMouseMotionListener(this);
   addMouseWheelListener(this);
@@ -71,34 +74,38 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  
  public void reset()
  {
-  d = 1.0;
-  fov = 45.0;
   alpha = Math.PI;
   beta = 0.0;
+  scale = 1.0;
+  zoom = 1.0;
   lastX = 0;
   lastY = 0;
   transX = 0;
   transY = 0;
-  maxBound = 2.0;
-  centralPoint = new Point3D(0.0, 0.0, 0.0);
- }
- 
- public void setModel(Model model)
- {
-  reset();
-  this.model = model;
   if(model!=null)
   {
    Bounds3D bounds = model.getBounds3D();
    centralPoint = new Point3D((bounds.getxMin()+bounds.getxMax())/2.0, (bounds.getyMin()+bounds.getyMax())/2.0, (bounds.getzMin()+bounds.getzMax())/2.0);
    maxBound = Double.max(Double.max(bounds.getDx(), bounds.getDy()), bounds.getDz());
   }
+  else
+  {
+   maxBound = 2.0;
+   centralPoint = new Point3D(0.0, 0.0, 0.0);
+  }
+ }
+ 
+ public void setModel(Model model)
+ {  
+  this.model = model;
+  reset();
   repaint();
  }
  
  @Override
  protected void paintComponent(Graphics g)
  {
+  calculateAll();
   Graphics2D g2d = (Graphics2D)g;
   int viewWidth = getWidth();
   int viewHeight = getHeight();
@@ -195,6 +202,20 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
     }
    }
    
+   if(showSpacesShellGeometryStroke)
+   {
+    for(Space space: spaces)
+    {
+     Appearance appearance = space.getShellGeometryAppearanceForView(this);
+     if(appearance!=null)
+     {
+      g2d.setColor(appearance.getStrokeColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.draw(screenShape);
+     }
+    }
+   }
+   
    if(showSurfacesPlanarGeometryStroke)
    {
     for(Surface surface: surfaces)
@@ -254,33 +275,30 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  
  public Point transform3DTo2D(Point3D point3D)
  {
-  int viewWidth = getWidth();
-  int viewHeight = getHeight();
-  double pX = point3D.getX();
-  double pY = point3D.getY();
-  double pZ = point3D.getZ();
-  double w = Math.min(viewWidth, viewHeight);
-  // Po³owa szerokoœci (lub wysokoœci) rzutni
-  double r = d*Math.tan(Math.toRadians(fov/2.0));
-  // Przesuniêcie punktu obrotu do œrodka uk³adu
-  double x = pX-centralPoint.getX();
-  double y = pY-centralPoint.getY();
-  double z = pZ-centralPoint.getZ();
-  // Obrót uk³adu wokó³ œrodka
-  double xx = Mt[0][0]*x+Mt[0][1]*y;
-  double yy = Mt[1][0]*x+Mt[1][1]*y+Mt[1][2]*z;
-  double zz = Mt[2][0]*x+Mt[2][1]*y+Mt[2][2]*z;
-  // Przesuniêcie uk³adu za rzutnie
-  zz = zz+d+2.0*maxBound;
-  // Rzutowanie na p³aszczyznê 2D
-  double xp = xx*d/zz;
-  double yp = yy*d/zz;
-  // Wspó³rzêdne punktu w uk³adzie ekranu
-  int xs = (int)(0.5*w*xp/r)+viewWidth/2;
-  int ys = (int)(-0.5*w*yp/r)+viewHeight/2;
-  // Przesuniêcie w p³aszczyŸnie 2D (piksele)
-  Point point2D = new Point(xs+transX, ys+transY);
-  return point2D;
+  double halfWidth = getWidth()/2.0;
+  double halfHeight = getHeight()/2.0;
+  Point point = new Point();
+  double c2;
+
+  double x = point3D.getX() - centralPoint.getX();
+  double y = point3D.getY() - centralPoint.getY();
+  double z = point3D.getZ() - centralPoint.getZ();
+
+  double a = Mt[0][0] * x + Mt[0][1] * y;
+  double b = Mt[1][0] * x + Mt[1][1] * y + Mt[1][2] * z;
+  double c = Mt[2][0] * x + Mt[2][1] * y + Mt[2][2] * z;
+
+  double temp = scale * b;
+
+  // punkt nie jest widoczny
+  if (temp > c3)
+   return null;
+
+  c2 = c1 / (c3 - temp);
+  point.x = (int) ((a) * c2 + halfWidth) + transX;
+  point.y = (int) ((c) * c2 + halfHeight) + transY;
+
+  return point;
  }
 
  public void mousePressed(MouseEvent e)
@@ -293,9 +311,8 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  {
   if(e.getModifiersEx()==MouseEvent.BUTTON1_DOWN_MASK)
   {
-   alpha -= (double)(e.getY()-lastY)/100.0; 
-   beta += (double)(e.getX()-lastX)/60.0;
-   updateMt();
+   alpha += (double)(e.getY()-lastY)/100.0; 
+   beta -= (double)(e.getX()-lastX)/60.0;
   }
   if(e.getModifiersEx()==MouseEvent.BUTTON3_DOWN_MASK)
   {
@@ -309,11 +326,7 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
 
  public void mouseWheelMoved(MouseWheelEvent e)
  { 
-  fov = fov+(e.getWheelRotation()/1.0);
-  if(fov<0.001)
-   fov = 0.001;
-  if(fov>180.0)
-   fov = 180.0;
+  zoom = zoom + (double) e.getWheelRotation() / 10.0;  
   repaint();
  }
 
@@ -323,17 +336,27 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  public void mouseExited(MouseEvent e) { }
  public void mouseReleased(MouseEvent e) { }
 
- /** Uaktualnia macierz obrotu */
- private void updateMt()
+ /** Oblicza wszystkie niezbêdne wspó³czynniki (np. macierz obrotu) */
+ private void calculateAll()
  {
+  int width = this.getWidth();
+  int height = this.getHeight();
+
   Mt[0][0] = Math.cos(-beta);
-  Mt[1][0] = Math.sin(-beta)*Math.cos(alpha);
-  Mt[2][0] = Math.sin(-beta)*Math.sin(alpha);
+  Mt[1][0] = Math.sin(-beta) * Math.cos(alpha);
+  Mt[2][0] = Math.sin(-beta) * Math.sin(alpha);
   Mt[0][1] = -Math.sin(-beta);
-  Mt[1][1] = Math.cos(-beta)*Math.cos(alpha);
-  Mt[2][1] = Math.cos(-beta)*Math.sin(alpha);
+  Mt[1][1] = Math.cos(-beta) * Math.cos(alpha);
+  Mt[2][1] = Math.cos(-beta) * Math.sin(alpha);
   Mt[0][2] = 0;
   Mt[1][2] = -Math.sin(alpha);
   Mt[2][2] = Math.cos(alpha);
+
+  // parametry pola widzenia:
+  double obs = width / (2 * Math.tan(kp / 2));
+  scale = Math.min(width, height) / (0.5 * maxBound * zoom);
+  c1 = obs * scale;
+  c3 = obs + width;
  }
+
 }

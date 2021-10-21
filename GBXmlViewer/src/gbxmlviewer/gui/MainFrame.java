@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -23,6 +22,7 @@ public class MainFrame extends JFrame
  private ResourceManager resourceManager;
  private JToolBar toolBar;
  private JButton openFileButton;
+ private JButton resetViewButton;
  private JToggleButton showSurfacesPlanarGeometryStrokeButton;
  private JToggleButton showSurfacesPlanarGeometryFillButton;
  private JToggleButton showSpacesSpaceBoundaryStrokeButton;
@@ -61,6 +61,8 @@ public class MainFrame extends JFrame
   
   openFileButton = new JButton(resourceManager.getIcon("openFile_24"));
   openFileButton.setFocusable(false);
+  resetViewButton = new JButton(resourceManager.getIcon("resetView_24"));
+  resetViewButton.setFocusable(false);
   
   showSurfacesPlanarGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", "Surface-PlanarGeometry (stroke)");
   showSurfacesPlanarGeometryFillButton = createVisibilityButton(false, "showGreen_24", "Surface-PlanarGeometry (fill)");
@@ -75,6 +77,7 @@ public class MainFrame extends JFrame
   toolBar.setRollover(true);
   toolBar.setFloatable(false);
   toolBar.add(openFileButton);
+  toolBar.add(resetViewButton);
   toolBar.addSeparator();
   toolBar.add(showSurfacesPlanarGeometryStrokeButton);
   toolBar.add(showSurfacesPlanarGeometryFillButton);
@@ -102,7 +105,18 @@ public class MainFrame extends JFrame
      xmlReader.readModel(fileChooser.getSelectedFile());
      Model model = xmlReader.getModel();
      view.setModel(model);
+     setTitle(fileChooser.getSelectedFile().getAbsolutePath());
     }    
+   }
+  });
+  
+  resetViewButton.addActionListener(new ActionListener()
+  {   
+   @Override
+   public void actionPerformed(ActionEvent e)
+   {
+    view.reset();
+    view.repaint();    
    }
   });
  }

@@ -1,12 +1,10 @@
 package gbxmlviewer.model;
 
-import java.awt.Point;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
 import gbxmlviewer.geom.Bounds3D;
-import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.gui.View;
 
 public class PlanarGeometry
@@ -36,23 +34,11 @@ public class PlanarGeometry
   return bounds;
  }
  
- public GeneralPath getScreenPath(View view)
+ public List<GeneralPath> getAsScreenPaths(View view)
  {
-  GeneralPath generalPath = new GeneralPath();
+  List<GeneralPath> paths = new ArrayList<>(polyLoops.size());
   for(PolyLoop polyLoop: polyLoops)
-  {
-   List<CartesianPoint> points = polyLoop.getCartesianPoints();
-   for(int i=0; i<points.size(); i++)
-   {
-    Point3D point3D = points.get(i).getAsPoint3D();
-    Point point2D = view.transform3DTo2D(point3D);
-    if(i==0)
-     generalPath.moveTo(point2D.x, point2D.y);
-    else
-     generalPath.lineTo(point2D.x, point2D.y);
-   }
-   generalPath.closePath();
-  }
-  return generalPath;
+   paths.add(polyLoop.getAsScreenPath(view));
+  return paths;
  }
 }

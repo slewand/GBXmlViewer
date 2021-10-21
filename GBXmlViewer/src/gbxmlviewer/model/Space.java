@@ -53,7 +53,10 @@ public class Space
   {
    PlanarGeometry planarGeometry = spaceBoundary.getPlanarGeometry();
    if(planarGeometry!=null && !planarGeometry.getPolyLoops().isEmpty())
-    screenShapes.add(new Area(planarGeometry.getScreenPath(view)));
+   {
+    for(GeneralPath generalPath: planarGeometry.getAsScreenPaths(view))
+     screenShapes.add(new Area(generalPath));
+   }
   }
   Appearance appearance = screenShapes.isEmpty() ? null : new Appearance(screenShapes, Color.BLACK, Color.RED);
   return appearance;
@@ -62,24 +65,25 @@ public class Space
  public Appearance getPlanarGeometryAppearanceForView(View view)
  {
   Appearance appearance = null;
+  List<Area> regions = new ArrayList<>();
   if(planarGeometry!=null)
   {
-   GeneralPath generalPath = planarGeometry.getScreenPath(view);
-   if(generalPath!=null)
-    appearance = new Appearance(new Area(generalPath), Color.BLACK, Color.BLUE);
+   for(GeneralPath generalPath: planarGeometry.getAsScreenPaths(view))
+    regions.add(new Area(generalPath));
+   appearance = new Appearance(regions, Color.BLACK, Color.BLUE);
   }
   return appearance;
  }
  
  public Appearance getShellGeometryAppearanceForView(View view)
  {
-  Appearance appearance = null;
+  List<Area> screenShapes = new ArrayList<>();  
   if(shellGeometry!=null && shellGeometry.getClosedShell()!=null)
   {
-   GeneralPath generalPath = shellGeometry.getClosedShell().getScreenPath(view);
-   if(generalPath!=null)
-    appearance = new Appearance(new Area(generalPath), Color.BLACK, Color.YELLOW);
+   for(GeneralPath generalPath: shellGeometry.getClosedShell().getAsScreenPaths(view))
+    screenShapes.add(new Area(generalPath));   
   }
+  Appearance appearance = screenShapes.isEmpty() ? null : new Appearance(screenShapes, Color.BLACK, Color.YELLOW);
   return appearance;  
  }
 }

@@ -49,7 +49,7 @@ public class Surface
  {
   Area surfaceRegion = null;
   if(planarGeometry!=null)
-   surfaceRegion = new Area(planarGeometry.getScreenPath(view));
+   surfaceRegion = new Area(planarGeometry.getAsScreenPaths(view).get(0));
   
   // Otwory
   if(surfaceRegion!=null && !openings.isEmpty())

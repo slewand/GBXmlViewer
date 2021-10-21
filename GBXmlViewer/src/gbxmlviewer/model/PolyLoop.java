@@ -1,9 +1,13 @@
 package gbxmlviewer.model;
 
+import java.awt.Point;
+import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
 import gbxmlviewer.geom.Bounds3D;
+import gbxmlviewer.geom.Point3D;
+import gbxmlviewer.gui.View;
 
 public class PolyLoop
 {
@@ -18,9 +22,9 @@ public class PolyLoop
  {  
   cartesianPoints.add(cartesianPoint);
  }
- 
+  
  public Bounds3D getBounds3D()
- {  
+ {
   double xMin = Double.MAX_VALUE, yMin = Double.MAX_VALUE, zMin = Double.MAX_VALUE;
   double xMax = -Double.MAX_VALUE, yMax = -Double.MAX_VALUE, zMax = -Double.MAX_VALUE;
   for(CartesianPoint cartesianPoint: cartesianPoints)
@@ -42,5 +46,22 @@ public class PolyLoop
    }
   }
   return new Bounds3D(xMin, yMin, zMin, xMax, yMax, zMax);
+ }
+ 
+ public GeneralPath getAsScreenPath(View view)
+ {
+  GeneralPath generalPath = new GeneralPath();
+  List<CartesianPoint> points = cartesianPoints;
+  for(int i=0; i<points.size(); i++)
+  {
+   Point3D point3D = points.get(i).getAsPoint3D();
+   Point point2D = view.transform3DTo2D(point3D);
+   if(i==0)
+    generalPath.moveTo(point2D.x, point2D.y);
+   else
+    generalPath.lineTo(point2D.x, point2D.y);
+  }
+  generalPath.closePath();
+  return generalPath;
  }
 }
