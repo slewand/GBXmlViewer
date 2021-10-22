@@ -11,6 +11,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import gbxmlviewer.model.Building;
+import gbxmlviewer.model.BuildingStorey;
 import gbxmlviewer.model.Campus;
 import gbxmlviewer.model.CartesianPoint;
 import gbxmlviewer.model.ClosedShell;
@@ -57,6 +58,7 @@ public class XMLReader
 
   private Campus campus;
   private Building building;
+  private BuildingStorey buildingStorey;
   private Space space;
   private Surface surface;
   private Opening opening;
@@ -80,6 +82,9 @@ public class XMLReader
     break;
     case BUILDING_TAG:
      building = new Building();
+    break;
+    case BUILDING_STOREY_TAG:
+     buildingStorey = new BuildingStorey();
     break;
     case SPACE_TAG:
      space = new Space();
@@ -126,6 +131,11 @@ public class XMLReader
       campus.addBuilding(building);
      building = null;
     break;
+    case BUILDING_STOREY_TAG:
+     if(building!=null)
+      building.setBuildingStorey(buildingStorey);
+     buildingStorey = null;
+    break;
     case SPACE_TAG:
      if(building!=null)
       building.addSpace(space);
@@ -159,6 +169,8 @@ public class XMLReader
     case PLANAR_GEOMETRY_TAG:
      if(spaceBoundary!=null)
       spaceBoundary.setPlanarGeometry(planarGeometry);
+     if(buildingStorey!=null)
+      buildingStorey.setPlanarGeometry(planarGeometry);
      else if(space!=null)
       space.setPlanarGeometry(planarGeometry);
      else if(opening!=null)
@@ -169,7 +181,7 @@ public class XMLReader
     break;
     case POLY_LOOP_TAG:
      if(planarGeometry!=null)
-      planarGeometry.addPolyLoop(polyLoop);
+      planarGeometry.setPolyLoop(polyLoop);
      else if(closedShell!=null)
       closedShell.addPolyLoop(polyLoop);
      polyLoop = null;
@@ -196,6 +208,7 @@ public class XMLReader
   private final String GBXML_TAG = "gbXML",
                        CAMPUS_TAG = "Campus",
                        BUILDING_TAG = "Building",
+                       BUILDING_STOREY_TAG = "BuildingStorey",
                        SPACE_TAG = "Space",
                        OPENING_TAG = "Opening",
                        SURFACE_TAG = "Surface",

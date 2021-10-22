@@ -1,44 +1,46 @@
 package gbxmlviewer.model;
 
 import java.awt.geom.GeneralPath;
-import java.util.ArrayList;
-import java.util.List;
 
 import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.gui.View;
 
+/**
+ * List of points defining a loop.
+ * There are no repeated points in the list.
+ * All data are global, with the assumption that positive Z is up,
+ * and if CADModelAzimuth is undefined or zero,
+ * positive X is East and positive Y is North.
+ * If CADModelAzimuth is defined it is the angle of positive Y to North,
+ * positive X is the vectorial product of Y and Z.
+ * If geometry is to be precise, use Longitude, Latitude and Elevation
+ * in the Location element to define the origin.
+ * Otherwise the origin is an arbitrary point.
+ * Use PlanarGeometry to define a three dimensional polygon that lies on a plane,
+ * and has no self-intersection.
+ */
 public class PlanarGeometry
 {
- private List<PolyLoop> polyLoops = new ArrayList<>();
+ private PolyLoop polyLoop;
  
- public List<PolyLoop> getPolyLoops()
+ 
+ public PolyLoop getPolyLoop()
  {
-  return polyLoops;
+  return polyLoop;
  }
- 
- public void addPolyLoop(PolyLoop polyLoop)
+
+ public void setPolyLoop(PolyLoop polyLoop)
  {
-  polyLoops.add(polyLoop);
+  this.polyLoop = polyLoop;
  }
- 
+
  public Bounds3D getBounds3D()
  {
-  Bounds3D bounds = null;
-  for(PolyLoop polyLoop: polyLoops)
-  {
-   if(bounds==null)
-    bounds = polyLoop.getBounds3D();
-   else
-    bounds.union(polyLoop.getBounds3D());
-  }
-  return bounds;
+  return polyLoop.getBounds3D();
  }
  
- public List<GeneralPath> getAsScreenPaths(View view)
+ public GeneralPath getAsScreenPath(View view)
  {
-  List<GeneralPath> paths = new ArrayList<>(polyLoops.size());
-  for(PolyLoop polyLoop: polyLoops)
-   paths.add(polyLoop.getAsScreenPath(view));
-  return paths;
+  return polyLoop.getAsScreenPath(view);
  }
 }

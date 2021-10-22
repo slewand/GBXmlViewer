@@ -1,13 +1,14 @@
 package gbxmlviewer.model;
 
-import java.awt.Point;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
-import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.gui.View;
 
+/** 
+ * This is an element from ifcXML that describes a collection of faces that make up a closed shell.
+ */
 public class ClosedShell
 {
  private List<PolyLoop> polyLoops = new ArrayList<>();

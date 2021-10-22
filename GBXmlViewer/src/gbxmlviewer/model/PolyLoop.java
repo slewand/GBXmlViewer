@@ -9,6 +9,15 @@ import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.geom.Point3D;
 import gbxmlviewer.gui.View;
 
+/** 
+ * This is a list of coordinates that make up a polygon in three-dimensional space.
+ * All coordinates must lie on the same plane.
+ * The right-hand rule applies for defining the outward normal of a surface:
+ * For every surface, points must be defined in order, such that the direction of
+ * (the average cross-product between (any point, the centroid of the surface, and the next point))
+ * points in the direction of the outward normal,
+ * which is a vector pointing away from the first AdjacentSpaceID listed.
+ */
 public class PolyLoop
 {
  private List<CartesianPoint> cartesianPoints = new ArrayList<>();

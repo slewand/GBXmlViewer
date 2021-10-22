@@ -1,7 +1,6 @@
 package gbxmlviewer.model;
 
 import gbxmlviewer.geom.Bounds3D;
-import gbxmlviewer.geom.Point3D;
 
 /**
  * Model (odpowiada sekcji gbXML)

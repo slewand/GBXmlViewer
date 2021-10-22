@@ -9,6 +9,9 @@ import java.util.List;
 import gbxmlviewer.gui.Appearance;
 import gbxmlviewer.gui.View;
 
+/**
+ * A space represents a volume enclosed by surfaces.
+ */
 public class Space
 {
  private List<SpaceBoundary> spaceBoundaries = new ArrayList<>();
@@ -52,11 +55,8 @@ public class Space
   for(SpaceBoundary spaceBoundary: spaceBoundaries)
   {
    PlanarGeometry planarGeometry = spaceBoundary.getPlanarGeometry();
-   if(planarGeometry!=null && !planarGeometry.getPolyLoops().isEmpty())
-   {
-    for(GeneralPath generalPath: planarGeometry.getAsScreenPaths(view))
-     screenShapes.add(new Area(generalPath));
-   }
+   if(planarGeometry!=null && planarGeometry.getPolyLoop()!=null)
+    screenShapes.add(new Area(planarGeometry.getPolyLoop().getAsScreenPath(view)));
   }
   Appearance appearance = screenShapes.isEmpty() ? null : new Appearance(screenShapes, Color.BLACK, Color.RED);
   return appearance;
@@ -64,14 +64,10 @@ public class Space
  
  public Appearance getPlanarGeometryAppearanceForView(View view)
  {
-  Appearance appearance = null;
-  List<Area> regions = new ArrayList<>();
+  Area screenShape = null;
   if(planarGeometry!=null)
-  {
-   for(GeneralPath generalPath: planarGeometry.getAsScreenPaths(view))
-    regions.add(new Area(generalPath));
-   appearance = new Appearance(regions, Color.BLACK, Color.BLUE);
-  }
+   screenShape = new Area(planarGeometry.getAsScreenPath(view));
+  Appearance appearance = screenShape==null ? null : new Appearance(screenShape, Color.BLACK, Color.BLUE);
   return appearance;
  }
  
@@ -81,7 +77,7 @@ public class Space
   if(shellGeometry!=null && shellGeometry.getClosedShell()!=null)
   {
    for(GeneralPath generalPath: shellGeometry.getClosedShell().getAsScreenPaths(view))
-    screenShapes.add(new Area(generalPath));   
+    screenShapes.add(new Area(generalPath));
   }
   Appearance appearance = screenShapes.isEmpty() ? null : new Appearance(screenShapes, Color.BLACK, Color.YELLOW);
   return appearance;  

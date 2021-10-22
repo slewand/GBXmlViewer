@@ -5,6 +5,12 @@ import java.util.List;
 
 import gbxmlviewer.geom.Point3D;
 
+/** 
+ * This is the x, y, and z distances from the origin.
+ * This element must have three Coordinate elements when representing 3-d space,
+ * which represent x, y and z in order.
+ * This element must have two Coordinate elements when representing 2-d space.
+ */
 public class CartesianPoint
 {
  private List<Double> coordinates = new ArrayList<>(3);

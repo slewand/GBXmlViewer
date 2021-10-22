@@ -49,7 +49,7 @@ public class Surface
  {
   Area surfaceRegion = null;
   if(planarGeometry!=null)
-   surfaceRegion = new Area(planarGeometry.getAsScreenPaths(view).get(0));
+   surfaceRegion = new Area(planarGeometry.getAsScreenPath(view));
   
   // Otwory
   if(surfaceRegion!=null && !openings.isEmpty())
@@ -60,21 +60,18 @@ public class Surface
     if(planarGeometry!=null)
     {
      GeneralPath generalPath = new GeneralPath();
-     List<PolyLoop> polyLoops = planarGeometry.getPolyLoops();
-     for(PolyLoop polyLoop: polyLoops)
+     PolyLoop polyLoop = planarGeometry.getPolyLoop();
+     List<CartesianPoint> points = polyLoop.getCartesianPoints();
+     for(int i=0; i<points.size(); i++)
      {
-      List<CartesianPoint> points = polyLoop.getCartesianPoints();
-      for(int i=0; i<points.size(); i++)
-      {
-       Point3D point3D = points.get(i).getAsPoint3D();
-       Point point2D = view.transform3DTo2D(point3D);
-       if(i==0)
-        generalPath.moveTo(point2D.x, point2D.y);
-       else
-        generalPath.lineTo(point2D.x, point2D.y);
-      }
-      generalPath.closePath();
+      Point3D point3D = points.get(i).getAsPoint3D();
+      Point point2D = view.transform3DTo2D(point3D);
+      if(i==0)
+       generalPath.moveTo(point2D.x, point2D.y);
+      else
+       generalPath.lineTo(point2D.x, point2D.y);
      }
+     generalPath.closePath();
      Area openingRegion = new Area(generalPath);
      surfaceRegion.subtract(openingRegion);
     }

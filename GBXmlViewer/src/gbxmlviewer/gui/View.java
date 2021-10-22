@@ -12,6 +12,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Area;
+import java.awt.geom.Line2D;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -70,8 +71,7 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   addMouseMotionListener(this);
   addMouseWheelListener(this);
  }
- 
- 
+  
  public void reset()
  {
   alpha = Math.PI;
@@ -227,34 +227,57 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
     }
    }
   }
+  paintLegend(g2d);
+ }
+ 
+ /** Rysuje legendê */
+ private void paintLegend(Graphics2D g2d)
+ {
+  int x = 10;
+  int y = 20;
+  ViewElement[] viewElements = ViewElement.values();
   
-//  // Uk³ad wspó³rzêdnych
-//  Point p1 = null, p2 = null;  
-//  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0));
-//  if(p1!=null)
-//  {
-//   g.setColor(Color.BLUE); // oœ X
-//   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0));
-//   if(p2 != null)
-//   {
-//    g2d.draw(new Line2D.Double(p1, p2));
-//    g2d.drawString("X", p2.x+5, p2.y);
-//   }
-//   g.setColor(Color.GREEN); // oœ Y
-//   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0));
-//   if(p2 != null)
-//   {
-//    g2d.draw(new Line2D.Double(p1, p2));
-//    g2d.drawString("Y", p2.x+5, p2.y);
-//   }
-//   g.setColor(Color.RED); // oœ Z
-//   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0));
-//   if(p2 != null)
-//   {
-//    g2d.draw(new Line2D.Double(p1, p2));
-//    g2d.drawString("Z", p2.x+5, p2.y);
-//   }   
-//  }
+  for(ViewElement viewElement: viewElements)
+  {
+   g2d.setColor(Color.BLACK);
+   g2d.drawString(viewElement.getDescription(), x+30, y);
+   g2d.setColor(viewElement.getFillColor());
+   g2d.fillRect(x, y-8, 20, 10);
+   g2d.setColor(viewElement.getStrokeColor());
+   g2d.drawRect(x, y-8, 20, 10);   
+   y += 20;
+  }
+ }
+ 
+ /** Rysuje oœ x/y/z w œrodku uk³adu wspó³rzêdnych */
+ private void paintAxis(Graphics2D g2d)
+ {
+  Point p1 = null, p2 = null;  
+  p1 = transform3DTo2D(new Point3D(0.0, 0.0, 0.0));
+  if(p1!=null)
+  {
+   g2d.setColor(Color.BLUE); // oœ X
+   p2 = transform3DTo2D(new Point3D(1.0, 0.0, 0.0));
+   if(p2 != null)
+   {
+    g2d.draw(new Line2D.Double(p1, p2));
+    g2d.drawString("X", p2.x+5, p2.y);
+   }
+   g2d.setColor(Color.GREEN); // oœ Y
+   p2 = transform3DTo2D(new Point3D(0.0, 1.0, 0.0));
+   if(p2 != null)
+   {
+    g2d.draw(new Line2D.Double(p1, p2));
+    g2d.drawString("Y", p2.x+5, p2.y);
+   }
+   g2d.setColor(Color.RED); // oœ Z
+   p2 = transform3DTo2D(new Point3D(0.0, 0.0, 1.0));
+   if(p2 != null)
+   {
+    g2d.draw(new Line2D.Double(p1, p2));
+    g2d.drawString("Z", p2.x+5, p2.y);
+   }   
+  }  
  }
  
  public void setElementVisiblity(boolean showSurfacesPlanarGeometryStroke, boolean showSurfacesPlanarGeometryFill,
@@ -290,9 +313,9 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
 
   double temp = scale * b;
 
-  // punkt nie jest widoczny
-  if (temp > c3)
-   return null;
+//  // punkt nie jest widoczny
+//  if (temp > c3)
+//   return null;
 
   c2 = c1 / (c3 - temp);
   point.x = (int) ((a) * c2 + halfWidth) + transX;

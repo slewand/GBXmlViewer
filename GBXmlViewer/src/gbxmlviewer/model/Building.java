@@ -5,6 +5,17 @@ import java.util.List;
 
 public class Building
 {
+ private BuildingStorey buildingStorey;
+ public BuildingStorey getBuildingStorey()
+ {
+  return buildingStorey;
+ }
+
+ public void setBuildingStorey(BuildingStorey buildingStorey)
+ {
+  this.buildingStorey = buildingStorey;
+ }
+
  private List<Space> spaces = new ArrayList<>();
  
  public List<Space> getSpaces()

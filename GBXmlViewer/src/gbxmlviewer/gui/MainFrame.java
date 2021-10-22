@@ -64,14 +64,14 @@ public class MainFrame extends JFrame
   resetViewButton = new JButton(resourceManager.getIcon("resetView_24"));
   resetViewButton.setFocusable(false);
   
-  showSurfacesPlanarGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", "Surface-PlanarGeometry (stroke)");
-  showSurfacesPlanarGeometryFillButton = createVisibilityButton(false, "showGreen_24", "Surface-PlanarGeometry (fill)");
-  showSpacesSpaceBoundaryStrokeButton = createVisibilityButton(true, "showBlack_24", "Space-SpaceBoundary (stroke)");
-  showSpacesSpaceBoundaryFillButton = createVisibilityButton(true, "showRed_24", "Space-SpaceBoundary (fill)");
-  showSpacesPlanarGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", "Space-PlanarGeometry (stroke)");
-  showSpacesPlanarGeometryFillButton = createVisibilityButton(false, "showBlue_24", "Space-PlanarGeometry (fill)");
-  showSpacesShellGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", "Space-ShellGeometry (stroke)");
-  showSpacesShellGeometryFillButton = createVisibilityButton(false, "showYellow_24", "Space-ShellGeometry (fill)");
+  showSurfacesPlanarGeometryStrokeButton = createVisibilityButton(true, "showBlack_24", ViewElement.SURFACE_PLANAR_GEOMETRY.getDescription()+" (stroke)");
+  showSurfacesPlanarGeometryFillButton = createVisibilityButton(true, "showGreen_24", ViewElement.SURFACE_PLANAR_GEOMETRY.getDescription()+" (fill)");
+  showSpacesSpaceBoundaryStrokeButton = createVisibilityButton(false, "showBlack_24", ViewElement.SPACE_SPACE_BOUNDARY.getDescription()+" (stroke)");
+  showSpacesSpaceBoundaryFillButton = createVisibilityButton(false, "showRed_24", ViewElement.SPACE_SPACE_BOUNDARY.getDescription()+" (fill)");
+  showSpacesPlanarGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", ViewElement.SPACE_PLANAR_GEOMETRY.getDescription()+" (stroke)");
+  showSpacesPlanarGeometryFillButton = createVisibilityButton(false, "showBlue_24", ViewElement.SPACE_PLANAR_GEOMETRY.getDescription()+" (fill)");
+  showSpacesShellGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", ViewElement.SPACE_SHELL_GEOMETRY.getDescription()+" (stroke)");
+  showSpacesShellGeometryFillButton = createVisibilityButton(false, "showYellow_24", ViewElement.SPACE_SHELL_GEOMETRY.getDescription()+" (fill)");
   
   toolBar = new JToolBar();
   toolBar.setRollover(true);
@@ -82,12 +82,12 @@ public class MainFrame extends JFrame
   toolBar.add(showSurfacesPlanarGeometryStrokeButton);
   toolBar.add(showSurfacesPlanarGeometryFillButton);
   toolBar.addSeparator();
-  toolBar.add(showSpacesSpaceBoundaryStrokeButton);
-  toolBar.add(showSpacesSpaceBoundaryFillButton);
   toolBar.add(showSpacesPlanarGeometryStrokeButton);
   toolBar.add(showSpacesPlanarGeometryFillButton);
   toolBar.add(showSpacesShellGeometryStrokeButton);
-  toolBar.add(showSpacesShellGeometryFillButton);    
+  toolBar.add(showSpacesShellGeometryFillButton);
+  toolBar.add(showSpacesSpaceBoundaryStrokeButton);
+  toolBar.add(showSpacesSpaceBoundaryFillButton);
   add(toolBar, BorderLayout.NORTH);
   
   view = new View();

@@ -1,10 +1,9 @@
 package gbxmlviewer.model;
 
-/**
- * This element establishes the logical relation of a given part of the space ShellGeometry
- * such that its PlanarGeometry is part of an interior surface bounding the space.
+/** 
+ * Captures Building Storey Structure
  */
-public class SpaceBoundary
+public class BuildingStorey
 {
  private PlanarGeometry planarGeometry;
 
@@ -17,5 +16,4 @@ public class SpaceBoundary
  {
   this.planarGeometry = planarGeometry;
  }
- 
 }
