@@ -9,7 +9,7 @@ import gbxmlviewer.geom.Bounds3D;
  * The Campus element should be used as the base for all physical objects.
  * On a campus, place one or more buildings.
  */
-public class Campus
+public class Campus extends ModelElement
 {
  private List<Building> buildings = new ArrayList<>();
  private List<Surface> surfaces = new ArrayList<>();

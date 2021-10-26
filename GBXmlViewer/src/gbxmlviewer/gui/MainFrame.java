@@ -14,6 +14,7 @@ import javax.swing.filechooser.FileFilter;
 
 import gbxmlviewer.io.XMLReader;
 import gbxmlviewer.model.Model;
+import gbxmlviewer.model.ModelHelper;
 import gbxmlviewer.res.ResourceManager;
 
 @SuppressWarnings("serial")
@@ -27,8 +28,6 @@ public class MainFrame extends JFrame
  private JToggleButton showSurfacesPlanarGeometryFillButton;
  private JToggleButton showSpacesSpaceBoundaryStrokeButton;
  private JToggleButton showSpacesSpaceBoundaryFillButton;
- private JToggleButton showSpacesPlanarGeometryStrokeButton;
- private JToggleButton showSpacesPlanarGeometryFillButton;
  private JToggleButton showSpacesShellGeometryStrokeButton;
  private JToggleButton showSpacesShellGeometryFillButton;
  private JFileChooser fileChooser;
@@ -68,8 +67,6 @@ public class MainFrame extends JFrame
   showSurfacesPlanarGeometryFillButton = createVisibilityButton(true, "showGreen_24", ViewElement.SURFACE_PLANAR_GEOMETRY.getDescription()+" (fill)");
   showSpacesSpaceBoundaryStrokeButton = createVisibilityButton(false, "showBlack_24", ViewElement.SPACE_SPACE_BOUNDARY.getDescription()+" (stroke)");
   showSpacesSpaceBoundaryFillButton = createVisibilityButton(false, "showRed_24", ViewElement.SPACE_SPACE_BOUNDARY.getDescription()+" (fill)");
-  showSpacesPlanarGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", ViewElement.SPACE_PLANAR_GEOMETRY.getDescription()+" (stroke)");
-  showSpacesPlanarGeometryFillButton = createVisibilityButton(false, "showBlue_24", ViewElement.SPACE_PLANAR_GEOMETRY.getDescription()+" (fill)");
   showSpacesShellGeometryStrokeButton = createVisibilityButton(false, "showBlack_24", ViewElement.SPACE_SHELL_GEOMETRY.getDescription()+" (stroke)");
   showSpacesShellGeometryFillButton = createVisibilityButton(false, "showYellow_24", ViewElement.SPACE_SHELL_GEOMETRY.getDescription()+" (fill)");
   
@@ -82,8 +79,6 @@ public class MainFrame extends JFrame
   toolBar.add(showSurfacesPlanarGeometryStrokeButton);
   toolBar.add(showSurfacesPlanarGeometryFillButton);
   toolBar.addSeparator();
-  toolBar.add(showSpacesPlanarGeometryStrokeButton);
-  toolBar.add(showSpacesPlanarGeometryFillButton);
   toolBar.add(showSpacesShellGeometryStrokeButton);
   toolBar.add(showSpacesShellGeometryFillButton);
   toolBar.add(showSpacesSpaceBoundaryStrokeButton);
@@ -104,6 +99,7 @@ public class MainFrame extends JFrame
      XMLReader xmlReader = new XMLReader();
      xmlReader.readModel(fileChooser.getSelectedFile());
      Model model = xmlReader.getModel();
+     System.out.println(ModelHelper.modelToString(model));
      view.setModel(model);
      setTitle(fileChooser.getSelectedFile().getAbsolutePath());
     }    
@@ -144,8 +140,6 @@ public class MainFrame extends JFrame
                            showSurfacesPlanarGeometryFillButton.isSelected(),
                            showSpacesSpaceBoundaryStrokeButton.isSelected(),
                            showSpacesSpaceBoundaryFillButton.isSelected(),
-                           showSpacesPlanarGeometryStrokeButton.isSelected(),
-                           showSpacesPlanarGeometryFillButton.isSelected(),
                            showSpacesShellGeometryStrokeButton.isSelected(),
                            showSpacesShellGeometryFillButton.isSelected());
  }

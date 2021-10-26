@@ -16,6 +16,8 @@ import gbxmlviewer.model.Campus;
 import gbxmlviewer.model.CartesianPoint;
 import gbxmlviewer.model.ClosedShell;
 import gbxmlviewer.model.Model;
+import gbxmlviewer.model.ModelElement;
+import gbxmlviewer.model.ModelHelper;
 import gbxmlviewer.model.Opening;
 import gbxmlviewer.model.PlanarGeometry;
 import gbxmlviewer.model.PolyLoop;
@@ -76,97 +78,65 @@ public class XMLReader
    {
     case GBXML_TAG:
      model = new Model();
+     setId(model, attributes);
     break;
     case CAMPUS_TAG:
      campus = new Campus();
+     setId(campus, attributes);
+     model.setCampus(campus);
     break;
     case BUILDING_TAG:
      building = new Building();
+     setId(building, attributes);
+     campus.addBuilding(building);
     break;
     case BUILDING_STOREY_TAG:
      buildingStorey = new BuildingStorey();
+     setId(buildingStorey, attributes);
+     building.setBuildingStorey(buildingStorey);
     break;
     case SPACE_TAG:
      space = new Space();
+     setId(space, attributes);
+     building.addSpace(space);
     break;
     case SURFACE_TAG:
      surface = new Surface();
+     setId(surface, attributes);
+     campus.addSurface(surface);
+    break;
+    case ADJACENT_SPACE_ID_TAG:
+     if(surface!=null)
+     {
+      Space adjacentSpace = ModelHelper.getSpaceById(model, attributes.getValue(SPACE_ID_REF_ATTRIBUTE));
+      if(adjacentSpace!=null)
+       surface.addAdjacentSpace(adjacentSpace);
+     }
     break;
     case OPENING_TAG:
      opening = new Opening();
+     setId(opening, attributes);
+     surface.addOpening(opening);
     break;
     case SHELL_GEOMETRY_TAG:
      shellGeometry = new ShellGeometry();
+     setId(shellGeometry, attributes);
+     space.setShellGeometry(shellGeometry);
     break;
     case CLOSED_SHELL_TAG:
-     closedShell = new ClosedShell();
+     closedShell = new ClosedShell();     
+     setId(closedShell, attributes);
+     if(shellGeometry!=null)
+      shellGeometry.setClosedShell(closedShell);
     break;
     case SPACE_BOUNDARY_TAG:
      spaceBoundary = new SpaceBoundary();
+     setId(spaceBoundary, attributes);
+     space.addSpaceBoundary(spaceBoundary);
     break;    
     case PLANAR_GEOMETRY_TAG:
      planarGeometry = new PlanarGeometry();
-    break;
-    case POLY_LOOP_TAG:
-     polyLoop = new PolyLoop();
-    break;
-    case CARTESIAN_POINT_TAG:
-     cartesianPoint = new CartesianPoint();     
-    break;
-   }
-   super.startElement(uri, localName, qName, attributes);
-  }
-
-  @Override
-  public void endElement(String uri, String localName, String qName) throws SAXException
-  {
-   switch(qName)
-   {
-    case CAMPUS_TAG:
-     model.setCampus(campus);
-     campus = null;
-    break;
-    case BUILDING_TAG:
-     if(campus!=null)
-      campus.addBuilding(building);
-     building = null;
-    break;
-    case BUILDING_STOREY_TAG:
-     if(building!=null)
-      building.setBuildingStorey(buildingStorey);
-     buildingStorey = null;
-    break;
-    case SPACE_TAG:
-     if(building!=null)
-      building.addSpace(space);
-     space = null;
-    break;
-    case SPACE_BOUNDARY_TAG:
-     if(space!=null)
-      space.addSpaceBoundary(spaceBoundary);
-     spaceBoundary = null;
-    break;
-    case SURFACE_TAG:
-     if(campus!=null)
-      campus.addSurface(surface);
-     surface = null;
-    break;
-    case OPENING_TAG:
-     if(surface!=null)
-      surface.addOpening(opening);
-     opening = null;
-    break;
-    case SHELL_GEOMETRY_TAG:
-     if(space!=null)
-      space.setShellGeometry(shellGeometry);
-     shellGeometry = null;
-    break;
-    case CLOSED_SHELL_TAG:
-     if(shellGeometry!=null)
-      shellGeometry.setClosedShell(closedShell);
-     closedShell = null;
-    break;
-    case PLANAR_GEOMETRY_TAG:
+     setId(planarGeometry, attributes);
      if(spaceBoundary!=null)
       spaceBoundary.setPlanarGeometry(planarGeometry);
      if(buildingStorey!=null)
@@ -177,18 +147,63 @@ public class XMLReader
       opening.setPlanarGeometry(planarGeometry);
      else if(surface!=null)
       surface.setPlanarGeometry(planarGeometry);
-     planarGeometry = null;
     break;
     case POLY_LOOP_TAG:
+     polyLoop = new PolyLoop();
+     setId(polyLoop, attributes);
      if(planarGeometry!=null)
       planarGeometry.setPolyLoop(polyLoop);
      else if(closedShell!=null)
       closedShell.addPolyLoop(polyLoop);
+    break;
+    case CARTESIAN_POINT_TAG:
+     cartesianPoint = new CartesianPoint();
+     setId(cartesianPoint, attributes);
+     if(polyLoop!=null)
+      polyLoop.addCartesianPoint(cartesianPoint);
+    break;
+   }
+  }
+
+  @Override
+  public void endElement(String uri, String localName, String qName) throws SAXException
+  {
+   switch(qName)
+   {
+    case CAMPUS_TAG:
+     campus = null;
+    break;
+    case BUILDING_TAG:      
+     building = null;
+    break;
+    case BUILDING_STOREY_TAG:
+     buildingStorey = null;
+    break;
+    case SPACE_TAG:
+     space = null;
+    break;
+    case SPACE_BOUNDARY_TAG:      
+     spaceBoundary = null;
+    break;
+    case SURFACE_TAG:      
+     surface = null;
+    break;
+    case OPENING_TAG:
+     opening = null;
+    break;
+    case SHELL_GEOMETRY_TAG:
+     shellGeometry = null;
+    break;
+    case CLOSED_SHELL_TAG:
+     closedShell = null;
+    break;
+    case PLANAR_GEOMETRY_TAG:
+     planarGeometry = null;
+    break;
+    case POLY_LOOP_TAG:
      polyLoop = null;
     break;    
     case CARTESIAN_POINT_TAG:
-     if(polyLoop!=null)
-      polyLoop.addCartesianPoint(cartesianPoint);
      cartesianPoint = null;
     break;
     case COORDINATE_TAG:
@@ -205,6 +220,13 @@ public class XMLReader
    valueBuilder.append(text, start, length);   
   }  
 
+  private void setId(ModelElement modelElement, Attributes attributes)
+  {
+   String id = attributes.getValue(ID_ATTRIBUTE);
+   if(id!=null)
+    modelElement.setId(id);
+  }
+  
   private final String GBXML_TAG = "gbXML",
                        CAMPUS_TAG = "Campus",
                        BUILDING_TAG = "Building",
@@ -218,7 +240,10 @@ public class XMLReader
                        PLANAR_GEOMETRY_TAG = "PlanarGeometry",
                        POLY_LOOP_TAG = "PolyLoop",
                        CARTESIAN_POINT_TAG = "CartesianPoint",
-                       COORDINATE_TAG = "Coordinate";
-  
+                       COORDINATE_TAG = "Coordinate",
+                       ADJACENT_SPACE_ID_TAG = "AdjacentSpaceId",
+                       
+                       ID_ATTRIBUTE = "id",
+                       SPACE_ID_REF_ATTRIBUTE = "spaceIdRef";
  }
 }

@@ -19,7 +19,7 @@ import gbxmlviewer.gui.View;
  * Use PlanarGeometry to define a three dimensional polygon that lies on a plane,
  * and has no self-intersection.
  */
-public class PlanarGeometry
+public class PlanarGeometry extends ModelElement
 {
  private PolyLoop polyLoop;
  

@@ -5,7 +5,6 @@ import java.awt.Color;
 public enum ViewElement
 {
  SURFACE_PLANAR_GEOMETRY("Surface-PlanarGeometry", Color.BLACK, Color.GREEN),
- SPACE_PLANAR_GEOMETRY("Space-PlanarGeometry", Color.BLACK, Color.BLUE),
  SPACE_SHELL_GEOMETRY("Space-ShellGeometry", Color.BLACK, Color.YELLOW),
  SPACE_SPACE_BOUNDARY("Space-SpaceBoundary", Color.BLACK, Color.RED);
  

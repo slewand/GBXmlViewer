@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -13,9 +15,13 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import gbxmlviewer.geom.Bounds3D;
 import gbxmlviewer.geom.Point3D;
@@ -54,15 +60,15 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  
  private boolean showSurfacesPlanarGeometryStroke;
  private boolean showSurfacesPlanarGeometryFill;
- private boolean showSpacesSpaceBoundaryStroke;
- private boolean showSpacesSpaceBoundaryFill;
- private boolean showSpacesPlanarGeometryStroke;
- private boolean showSpacesPlanarGeometryFill;
  private boolean showSpacesShellGeometryStroke;
  private boolean showSpacesShellGeometryFill;
+ private boolean showSpacesSpaceBoundaryStroke;
+ private boolean showSpacesSpaceBoundaryFill;
  
  /** Aktualny model lub null */
  private Model model;
+
+ private List<Surface> selectedSurfaces = new ArrayList<>();
  
  public View()
  {
@@ -98,6 +104,7 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  public void setModel(Model model)
  {  
   this.model = model;
+  selectedSurfaces.clear();;
   reset();
   repaint();
  }
@@ -117,63 +124,69 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   {
    List<Surface> surfaces = model.getCampus().getSurfaces();
    List<Space> spaces = model.getCampus().getBuildings().get(0).getSpaces();
+   
+   List<Space> adjacentSpaces = new ArrayList<>();
+   for(Surface surface: selectedSurfaces)
+   {
+    for(Space adjacentSpace: surface.getAdjacentSpaces())
+    {
+     if(adjacentSpace!=null && !adjacentSpaces.contains(adjacentSpace))
+      adjacentSpaces.add(adjacentSpace);
+    }
+   }
 
    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
    if(showSpacesSpaceBoundaryFill)
    {
     for(Space space: spaces)
     {
-     Appearance appearance = space.getSpaceBoundariesAppearanceForView(this);
-     if(appearance!=null)
+     if(selectedSurfaces.isEmpty() || adjacentSpaces.contains(space))
      {
-      g2d.setPaint(appearance.getFillColor());
-      for(Area screenShape: appearance.getScreenShapes())
-       g2d.fill(screenShape);
+      Appearance appearance = space.getSpaceBoundariesAppearanceForView(this);
+      if(appearance!=null)
+      {
+       g2d.setPaint(appearance.getFillColor());
+       for(Area screenShape: appearance.getScreenShapes())
+        g2d.fill(screenShape);
+      }
      }
     }
    }
 
-   if(showSpacesPlanarGeometryFill)
-   {
-    for(Space space: spaces)
-    {
-     Appearance appearance = space.getPlanarGeometryAppearanceForView(this);
-     if(appearance!=null)
-     {
-      g2d.setPaint(appearance.getFillColor());
-      for(Area screenShape: appearance.getScreenShapes())
-       g2d.fill(screenShape);
-     }
-    }    
-   }
-   
    if(showSpacesShellGeometryFill)
    {
+
     for(Space space: spaces)
     {
-     Appearance appearance = space.getShellGeometryAppearanceForView(this);
-     if(appearance!=null)
+     if(selectedSurfaces.isEmpty() || adjacentSpaces.contains(space))
      {
-      g2d.setPaint(appearance.getFillColor());
-      for(Area screenShape: appearance.getScreenShapes())
-       g2d.fill(screenShape);
+      Appearance appearance = space.getShellGeometryAppearanceForView(this);
+      if(appearance!=null)
+      {
+       g2d.setPaint(appearance.getFillColor());
+       for(Area screenShape: appearance.getScreenShapes())
+        g2d.fill(screenShape);
+      }
      }
     }    
    }
    
    if(showSurfacesPlanarGeometryFill)
-   {    
+   {
     for(Surface surface: surfaces)
     {
-     Appearance appearance = surface.getAppearanceForView(this);
-     g2d.setPaint(appearance.getFillColor());
-     for(Area screenShape: appearance.getScreenShapes())
-      g2d.fill(screenShape);
+     if(selectedSurfaces.isEmpty() || selectedSurfaces.contains(surface))
+     {
+      Appearance appearance = surface.getAppearanceForView(this);
+      g2d.setPaint(appearance.getFillColor());
+      for(Area screenShape: appearance.getScreenShapes())
+       g2d.fill(screenShape);
+     }
     }
    }
       
    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-      
+   
    if(showSpacesSpaceBoundaryStroke)
    {
     for(Space space: spaces)
@@ -186,20 +199,6 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
        g2d.draw(screenShape);
      }
     }    
-   }
-   
-   if(showSpacesPlanarGeometryStroke)
-   {
-    for(Space space: spaces)
-    {
-     Appearance appearance = space.getPlanarGeometryAppearanceForView(this);
-     if(appearance!=null)
-     {
-      g2d.setColor(appearance.getStrokeColor());
-      for(Area screenShape: appearance.getScreenShapes())
-       g2d.draw(screenShape);
-     }
-    }
    }
    
    if(showSpacesShellGeometryStroke)
@@ -222,8 +221,17 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
     {
      Appearance appearance = surface.getAppearanceForView(this);
      g2d.setColor(appearance.getStrokeColor());
+     Rectangle2D screenShapeBounds = null;
      for(Area screenShape: appearance.getScreenShapes())
-      g2d.draw(screenShape);    
+     {
+      g2d.draw(screenShape);
+      if(screenShapeBounds==null)
+       screenShapeBounds = screenShape.getBounds2D();
+      else
+       screenShapeBounds = screenShapeBounds.createUnion(screenShape.getBounds2D());
+     }
+     if(selectedSurfaces.contains(surface) && surface.getId()!=null && !surface.getId().isEmpty())
+      g2d.drawString(surface.getId(), (int)screenShapeBounds.getCenterX(), (int)screenShapeBounds.getCenterY());
     }
    }
   }
@@ -282,15 +290,12 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
  
  public void setElementVisiblity(boolean showSurfacesPlanarGeometryStroke, boolean showSurfacesPlanarGeometryFill,
                                  boolean showSpacesSpaceBoundaryStroke, boolean showSpacesSpaceBoundaryFill,
-                                 boolean showSpacesPlanarGeometryStroke, boolean showSpacesPlanarGeometryFill,
                                  boolean showSpacesShellGeometryStroke, boolean showSpacesShellGeometryFill)
  {
   this.showSurfacesPlanarGeometryStroke = showSurfacesPlanarGeometryStroke;
   this.showSurfacesPlanarGeometryFill = showSurfacesPlanarGeometryFill;
   this.showSpacesSpaceBoundaryStroke = showSpacesSpaceBoundaryStroke;
   this.showSpacesSpaceBoundaryFill = showSpacesSpaceBoundaryFill;
-  this.showSpacesPlanarGeometryStroke = showSpacesPlanarGeometryStroke;
-  this.showSpacesPlanarGeometryFill = showSpacesPlanarGeometryFill;
   this.showSpacesShellGeometryStroke = showSpacesShellGeometryStroke;
   this.showSpacesShellGeometryFill = showSpacesShellGeometryFill;
   repaint();
@@ -353,8 +358,53 @@ public class View extends JPanel implements MouseListener, MouseMotionListener, 
   repaint();
  }
 
- public void mouseMoved(MouseEvent e) { }
- public void mouseClicked(MouseEvent e) { }
+ public void mouseClicked(MouseEvent e)
+ {
+  selectedSurfaces.clear();
+  if(model!=null)
+  {
+   for(Surface surface: model.getCampus().getSurfaces())
+   {
+    Appearance appearance = surface.getAppearanceForView(this);
+    if(appearance!=null)
+    {
+     List<Area> screenShapes = appearance.getScreenShapes();
+     for(Area screenShape: screenShapes)
+     {
+      if(!selectedSurfaces.contains(surface) && screenShape.contains(e.getX(), e.getY()))
+       selectedSurfaces.add(surface);
+     }
+    }
+   }
+  }  
+  repaint();
+  
+  if(selectedSurfaces.size()>1)
+  {
+   JPopupMenu popupMenu = new JPopupMenu();
+   for(int i=0; i<selectedSurfaces.size(); i++)
+   {
+    Surface surface = selectedSurfaces.get(i);
+    JMenuItem menuItem = new JMenuItem(surface.getId());
+    popupMenu.add(menuItem);
+    final int index = i;
+    menuItem.addActionListener(new ActionListener()
+    {     
+     @Override
+     public void actionPerformed(ActionEvent e)
+     {
+      Surface s = selectedSurfaces.get(index);
+      selectedSurfaces.clear();
+      selectedSurfaces.add(s);
+      repaint();
+     }
+    });
+   }
+   popupMenu.show(View.this, e.getX(), e.getY());
+  }
+ }
+ 
+ public void mouseMoved(MouseEvent e) { } 
  public void mouseEntered(MouseEvent e) { }
  public void mouseExited(MouseEvent e) { }
  public void mouseReleased(MouseEvent e) { }

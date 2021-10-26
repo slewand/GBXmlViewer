@@ -12,7 +12,7 @@ import gbxmlviewer.gui.View;
 /**
  * A space represents a volume enclosed by surfaces.
  */
-public class Space
+public class Space extends ModelElement
 {
  private List<SpaceBoundary> spaceBoundaries = new ArrayList<>();
  private PlanarGeometry planarGeometry;

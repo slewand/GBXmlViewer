@@ -3,7 +3,7 @@ package gbxmlviewer.model;
 /**
  * Otwór 
  */
-public class Opening
+public class Opening extends ModelElement
 {
  private PlanarGeometry planarGeometry;
 

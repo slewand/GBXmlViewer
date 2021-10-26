@@ -18,7 +18,7 @@ import gbxmlviewer.gui.View;
  * points in the direction of the outward normal,
  * which is a vector pointing away from the first AdjacentSpaceID listed.
  */
-public class PolyLoop
+public class PolyLoop extends ModelElement
 {
  private List<CartesianPoint> cartesianPoints = new ArrayList<>();
  

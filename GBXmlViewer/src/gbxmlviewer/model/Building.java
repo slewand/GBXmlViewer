@@ -3,7 +3,7 @@ package gbxmlviewer.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Building
+public class Building extends ModelElement
 {
  private BuildingStorey buildingStorey;
  public BuildingStorey getBuildingStorey()

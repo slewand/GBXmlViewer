@@ -5,7 +5,7 @@ import gbxmlviewer.geom.Bounds3D;
 /**
  * Model (odpowiada sekcji gbXML)
  */
-public class Model
+public class Model extends ModelElement
 {
  private Campus campus;
 

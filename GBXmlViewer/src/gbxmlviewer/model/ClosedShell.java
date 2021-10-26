@@ -9,7 +9,7 @@ import gbxmlviewer.gui.View;
 /** 
  * This is an element from ifcXML that describes a collection of faces that make up a closed shell.
  */
-public class ClosedShell
+public class ClosedShell extends ModelElement
 {
  private List<PolyLoop> polyLoops = new ArrayList<>();
  

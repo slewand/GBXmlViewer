@@ -15,9 +15,10 @@ import gbxmlviewer.gui.View;
 /**
  * Powierzchnia graniczna miêdzy pomieszczeniami
  */
-public class Surface
+public class Surface extends ModelElement
 {
  private PlanarGeometry planarGeometry;
+ private List<Space> adjacentSpaces = new ArrayList<>(2);
  private List<Opening> openings = new ArrayList<>();
 
  public PlanarGeometry getPlanarGeometry()
@@ -28,6 +29,16 @@ public class Surface
  public void setPlanarGeometry(PlanarGeometry planarGeometry)
  {
   this.planarGeometry = planarGeometry;
+ }
+ 
+ public List<Space> getAdjacentSpaces()
+ {
+  return adjacentSpaces;
+ }
+ 
+ public void addAdjacentSpace(Space adjacentSpace)
+ {
+  adjacentSpaces.add(adjacentSpace);
  }
  
  public List<Opening> getOpenings()

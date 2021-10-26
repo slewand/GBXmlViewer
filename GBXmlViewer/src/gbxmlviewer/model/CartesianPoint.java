@@ -11,7 +11,7 @@ import gbxmlviewer.geom.Point3D;
  * which represent x, y and z in order.
  * This element must have two Coordinate elements when representing 2-d space.
  */
-public class CartesianPoint
+public class CartesianPoint extends ModelElement
 {
  private List<Double> coordinates = new ArrayList<>(3);
  

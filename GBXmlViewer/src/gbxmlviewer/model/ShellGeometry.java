@@ -12,7 +12,7 @@ package gbxmlviewer.model;
  * ShellGeometry is used to define a union of closed shells,
  * where there is no intersection of any two of the given shells.
  */
-public class ShellGeometry
+public class ShellGeometry extends ModelElement
 {
  private ClosedShell closedShell;
 

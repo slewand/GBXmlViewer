@@ -3,7 +3,7 @@ package gbxmlviewer.model;
 /** 
  * Captures Building Storey Structure
  */
-public class BuildingStorey
+public class BuildingStorey extends ModelElement
 {
  private PlanarGeometry planarGeometry;
 
